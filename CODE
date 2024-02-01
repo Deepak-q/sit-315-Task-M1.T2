@@ -1,0 +1,47 @@
+// Constants for pins
+const int tempPin = A0; // Analog pin for the temperature sensor
+const int ledPin = 4;   // LED pin
+const int buttonPin = 3; // Button pin for interrupt
+// Variables
+volatile float tempThreshold = 20.0; // Temperature threshold in Celsius
+int tempReading;                     // Variable to store temperature reading
+
+void setup()
+{
+  pinMode(ledPin, OUTPUT);   // Set the LED pin as an output
+  pinMode(buttonPin, INPUT); // Set the button pin as an input
+  attachInterrupt(digitalPinToInterrupt(buttonPin), changeThreshold, CHANGE); // Attach interrupt to the button pin
+  Serial.begin(9600); // Initialize serial communication at 9600 baud rate
+}
+void loop()
+{
+  tempReading = analogRead(tempPin); // Read the temperature sensor output
+  float voltage = tempReading * 5.0 / 1024.0; // Convert the reading to voltage
+  float temperatureC = (voltage - 0.5) * 100.0; // Convert voltage to temperature in Celsius
+
+  Serial.print("Temperature: ");
+  Serial.print(temperatureC);
+  Serial.println(" °C");
+
+  if (temperatureC > tempThreshold)
+  {                                         // If temperature exceeds the threshold
+    digitalWrite(ledPin, HIGH);             // Turn on the LED
+    Serial.println("Temperature exceeds threshold. LED ON.");
+  }
+  else
+  {
+    digitalWrite(ledPin, LOW); // Turn off the LED
+    Serial.println("Temperature within threshold. LED OFF.");
+  }
+
+  delay(1000); // Delay for readability and to avoid flooding the serial monitor
+}
+void changeThreshold()
+{
+  // Increase temperature threshold by 1 degree when the button is pressed
+  tempThreshold += 1.0;
+  Serial.print("New Threshold: ");
+  Serial.print(tempThreshold);
+  Serial.println(" °C");
+  delay(500); // Debouncing delay
+}
